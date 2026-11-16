@@ -1,0 +1,21 @@
+{
+  "table": "contacts",
+  "columns": {
+    "id": "int64",
+    "tenant": "text",
+    "email": "nullable_text",
+    "active": "bool01",
+    "external_id": "text",
+    "n": "int64"
+  },
+  "indexes": [
+    {
+      "name": "active_email",
+      "sql": "CREATE UNIQUE INDEX active_email ON contacts(tenant,lower(email)) WHERE active=1"
+    },
+    {
+      "name": "sqlite_autoindex_contacts_1",
+      "sql": null
+    }
+  ]
+}
