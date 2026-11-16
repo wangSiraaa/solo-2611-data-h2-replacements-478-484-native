@@ -1,0 +1,6 @@
+{"scenario": "preview-normal", "actual": {"x": 2, "y": 3, "z": 4}, "expected": {"x": 2, "y": 3, "z": 4}}
+{"scenario": "preview-forward", "actual": {"x": 2, "z": 4, "y": 3}, "expected": {"x": 2, "y": 3, "z": 4}}
+{"scenario": "unknown-column", "actual": "ValueError", "expected": "rejected"}
+{"scenario": "storage-reopen-normal", "actual": [{"id": "a", "row": {"x": 2, "y": 3, "z": 4}}], "expected_ids": ["a"]}
+{"scenario": "stale-index", "actual": [], "expected": []}
+{"scenario": "virtual-on-disk", "physical_columns": ["x", "z"], "expected_physical_columns": ["x", "z"]}
