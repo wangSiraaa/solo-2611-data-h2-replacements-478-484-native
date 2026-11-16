@@ -1,0 +1,515 @@
+[
+  {
+    "scenario": "independent_basic",
+    "ok": true,
+    "get": "1",
+    "range_keys": [
+      "aa1",
+      "bb0",
+      "bb1"
+    ],
+    "empty_range": [],
+    "missing": null,
+    "inspect": {
+      "directory": [
+        {
+          "count": 2,
+          "crc32": 4079026914,
+          "first": "616130",
+          "length": 18,
+          "offset": 0
+        },
+        {
+          "count": 2,
+          "crc32": 3718643641,
+          "first": "626230",
+          "length": 18,
+          "offset": 18
+        }
+      ],
+      "groups_read": [
+        0,
+        1
+      ],
+      "decoded": 4,
+      "bytes_read": 36
+    }
+  },
+  {
+    "scenario": "non_ascii_and_empty_value",
+    "ok": true,
+    "rows": [
+      "plain",
+      "键α",
+      "键β",
+      "🔑x"
+    ],
+    "empty_value": "",
+    "inspect": {
+      "directory": [
+        {
+          "count": 1,
+          "crc32": 3627382867,
+          "first": "706c61696e",
+          "length": 12,
+          "offset": 0
+        },
+        {
+          "count": 3,
+          "crc32": 4132345851,
+          "first": "e994aeceb1",
+          "length": 31,
+          "offset": 12
+        }
+      ],
+      "groups_read": [
+        1
+      ],
+      "decoded": 3,
+      "bytes_read": 31
+    }
+  },
+  {
+    "scenario": "prefix_compression_cross_group",
+    "ok": true,
+    "keys": [
+      "prefix-common-0002",
+      "prefix-common-0003"
+    ],
+    "inspect": {
+      "directory": [
+        {
+          "count": 2,
+          "crc32": 4034899506,
+          "first": "7072656669782d636f6d6d6f6e2d30303031",
+          "length": 33,
+          "offset": 0
+        },
+        {
+          "count": 2,
+          "crc32": 3432447649,
+          "first": "7072656669782d636f6d6d6f6e2d30303033",
+          "length": 34,
+          "offset": 33
+        }
+      ],
+      "groups_read": [
+        0,
+        1
+      ],
+      "decoded": 4,
+      "bytes_read": 67
+    }
+  },
+  {
+    "scenario": "writer_roundtrip_and_growth",
+    "ok": true,
+    "writer": {
+      "action": "put",
+      "decoded": 2,
+      "reencoded": 2,
+      "moved": 2,
+      "payload_bytes": 47,
+      "page_bytes": 199,
+      "segments": 2
+    },
+    "directory": [
+      {
+        "count": 2,
+        "crc32": 3348479119,
+        "first": "616130",
+        "length": 29,
+        "offset": 0
+      },
+      {
+        "count": 2,
+        "crc32": 3718643641,
+        "first": "626230",
+        "length": 18,
+        "offset": 29
+      }
+    ]
+  },
+  {
+    "scenario": "segment_head_and_tail_edits",
+    "ok": true,
+    "head_edit": {
+      "action": "put",
+      "decoded": 4,
+      "reencoded": 4,
+      "moved": 12,
+      "payload_bytes": 140,
+      "page_bytes": 435,
+      "segments": 4
+    },
+    "tail_edit": {
+      "action": "put",
+      "decoded": 4,
+      "reencoded": 4,
+      "moved": 12,
+      "payload_bytes": 143,
+      "page_bytes": 438,
+      "segments": 4
+    }
+  },
+  {
+    "scenario": "boundary_insert_split",
+    "ok": true,
+    "segment_sizes": [
+      5,
+      4,
+      8
+    ],
+    "writer": {
+      "action": "put",
+      "decoded": 9,
+      "reencoded": 9,
+      "moved": 8,
+      "payload_bytes": 145,
+      "page_bytes": 368,
+      "segments": 3
+    },
+    "range_keys": [
+      "g07",
+      "g075"
+    ]
+  },
+  {
+    "scenario": "delete_and_rename",
+    "ok": true,
+    "after_delete": {
+      "action": "delete",
+      "decoded": 1,
+      "reencoded": 1,
+      "moved": 2,
+      "payload_bytes": 33,
+      "page_bytes": 180,
+      "segments": 2
+    },
+    "rename": {
+      "action": "rename",
+      "decoded": 3,
+      "reencoded": 3,
+      "moved": 0,
+      "payload_bytes": 32,
+      "page_bytes": 179,
+      "segments": 2
+    },
+    "errors": [
+      "KeyError",
+      "KeyError",
+      "KeyError"
+    ]
+  },
+  {
+    "scenario": "rename_shortens_common_prefix",
+    "ok": true,
+    "keys": [
+      "lo-Z",
+      "longprefix-1",
+      "longprefix-3"
+    ],
+    "writer": {
+      "action": "rename",
+      "decoded": 3,
+      "reencoded": 3,
+      "moved": 0,
+      "payload_bytes": 36,
+      "page_bytes": 118,
+      "segments": 1
+    }
+  },
+  {
+    "scenario": "page_full_and_original_readable",
+    "ok": true,
+    "outcome": "PAGE_FULL",
+    "full_attempt": {
+      "action": "put",
+      "decoded": 4,
+      "reencoded": 4,
+      "moved": 8,
+      "payload_bytes": 3903,
+      "page_bytes": 4135,
+      "would_exceed": 4096
+    },
+    "original_bytes": 3924,
+    "original_records": 12
+  },
+  {
+    "scenario": "key_cap_full",
+    "ok": true,
+    "outcome": "PAGE_FULL",
+    "page_bytes": 2155
+  },
+  {
+    "scenario": "empty_page",
+    "ok": true,
+    "writer": {
+      "action": "put",
+      "decoded": 1,
+      "reencoded": 1,
+      "moved": 0,
+      "payload_bytes": 12,
+      "page_bytes": 96,
+      "segments": 1
+    },
+    "inspect": {
+      "directory": [],
+      "groups_read": [],
+      "decoded": 0,
+      "bytes_read": 0
+    }
+  },
+  {
+    "scenario": "local_budget_64_keys",
+    "ok": true,
+    "report": {
+      "action": "put",
+      "decoded": 8,
+      "reencoded": 8,
+      "moved": 56,
+      "payload_bytes": 1005,
+      "page_bytes": 1649,
+      "segments": 8
+    },
+    "budget": 16,
+    "page_bytes": 1649
+  },
+  {
+    "scenario": "reader_lazy_metrics",
+    "ok": true,
+    "point": {
+      "directory": [
+        {
+          "count": 8,
+          "crc32": 2097036166,
+          "first": "6b303030",
+          "length": 67,
+          "offset": 0
+        },
+        {
+          "count": 8,
+          "crc32": 4172825630,
+          "first": "6b303038",
+          "length": 68,
+          "offset": 67
+        },
+        {
+          "count": 8,
+          "crc32": 1791660343,
+          "first": "6b303136",
+          "length": 68,
+          "offset": 135
+        },
+        {
+          "count": 8,
+          "crc32": 278469959,
+          "first": "6b303234",
+          "length": 68,
+          "offset": 203
+        },
+        {
+          "count": 8,
+          "crc32": 3122254483,
+          "first": "6b303332",
+          "length": 67,
+          "offset": 271
+        },
+        {
+          "count": 8,
+          "crc32": 46082563,
+          "first": "6b303430",
+          "length": 67,
+          "offset": 338
+        },
+        {
+          "count": 8,
+          "crc32": 2720706317,
+          "first": "6b303438",
+          "length": 68,
+          "offset": 405
+        },
+        {
+          "count": 8,
+          "crc32": 2519190732,
+          "first": "6b303536",
+          "length": 68,
+          "offset": 473
+        }
+      ],
+      "groups_read": [
+        4
+      ],
+      "decoded": 8,
+      "bytes_read": 67
+    },
+    "empty_interval": {
+      "directory": [
+        {
+          "count": 8,
+          "crc32": 2097036166,
+          "first": "6b303030",
+          "length": 67,
+          "offset": 0
+        },
+        {
+          "count": 8,
+          "crc32": 4172825630,
+          "first": "6b303038",
+          "length": 68,
+          "offset": 67
+        },
+        {
+          "count": 8,
+          "crc32": 1791660343,
+          "first": "6b303136",
+          "length": 68,
+          "offset": 135
+        },
+        {
+          "count": 8,
+          "crc32": 278469959,
+          "first": "6b303234",
+          "length": 68,
+          "offset": 203
+        },
+        {
+          "count": 8,
+          "crc32": 3122254483,
+          "first": "6b303332",
+          "length": 67,
+          "offset": 271
+        },
+        {
+          "count": 8,
+          "crc32": 46082563,
+          "first": "6b303430",
+          "length": 67,
+          "offset": 338
+        },
+        {
+          "count": 8,
+          "crc32": 2720706317,
+          "first": "6b303438",
+          "length": 68,
+          "offset": 405
+        },
+        {
+          "count": 8,
+          "crc32": 2519190732,
+          "first": "6b303536",
+          "length": 68,
+          "offset": 473
+        }
+      ],
+      "groups_read": [],
+      "decoded": 0,
+      "bytes_read": 0
+    },
+    "cross_range": {
+      "directory": [
+        {
+          "count": 8,
+          "crc32": 2097036166,
+          "first": "6b303030",
+          "length": 67,
+          "offset": 0
+        },
+        {
+          "count": 8,
+          "crc32": 4172825630,
+          "first": "6b303038",
+          "length": 68,
+          "offset": 67
+        },
+        {
+          "count": 8,
+          "crc32": 1791660343,
+          "first": "6b303136",
+          "length": 68,
+          "offset": 135
+        },
+        {
+          "count": 8,
+          "crc32": 278469959,
+          "first": "6b303234",
+          "length": 68,
+          "offset": 203
+        },
+        {
+          "count": 8,
+          "crc32": 3122254483,
+          "first": "6b303332",
+          "length": 67,
+          "offset": 271
+        },
+        {
+          "count": 8,
+          "crc32": 46082563,
+          "first": "6b303430",
+          "length": 67,
+          "offset": 338
+        },
+        {
+          "count": 8,
+          "crc32": 2720706317,
+          "first": "6b303438",
+          "length": 68,
+          "offset": 405
+        },
+        {
+          "count": 8,
+          "crc32": 2519190732,
+          "first": "6b303536",
+          "length": 68,
+          "offset": 473
+        }
+      ],
+      "groups_read": [
+        4,
+        5
+      ],
+      "decoded": 16,
+      "bytes_read": 134
+    }
+  },
+  {
+    "scenario": "corruption_detected_on_access",
+    "ok": true,
+    "point_read": true,
+    "get_raises": "CorruptPage",
+    "audit_raises": "CorruptPage",
+    "intact_inspect": {
+      "directory": [
+        {
+          "count": 8,
+          "crc32": 2097036166,
+          "first": "6b303030",
+          "length": 67,
+          "offset": 0
+        },
+        {
+          "count": 8,
+          "crc32": 4172825630,
+          "first": "6b303038",
+          "length": 68,
+          "offset": 67
+        }
+      ],
+      "groups_read": [
+        0
+      ],
+      "decoded": 8,
+      "bytes_read": 67
+    }
+  },
+  {
+    "scenario": "bad_directories_rejected",
+    "ok": true,
+    "outcomes": {
+      "bad_magic": "rejected",
+      "truncated": "rejected",
+      "uncovered": "rejected"
+    }
+  }
+]
