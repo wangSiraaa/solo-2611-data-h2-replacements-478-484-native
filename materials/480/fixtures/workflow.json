@@ -1,0 +1,100 @@
+{
+  "path_base": "workflow file parent",
+  "nodes": {
+    "scarce": {
+      "root": "nodes/scarce",
+      "capacity": {
+        "cpu": 1,
+        "io": 1
+      }
+    },
+    "other": {
+      "root": "nodes/other",
+      "capacity": {
+        "cpu": 1,
+        "io": 1
+      }
+    }
+  },
+  "stages": [
+    {
+      "stage_id": "A",
+      "depends_on": [],
+      "workers": [
+        {
+          "worker_id": "flexible",
+          "resources": {
+            "cpu": 1,
+            "io": 1
+          },
+          "allowed_nodes": [
+            "scarce",
+            "other"
+          ],
+          "factor": 2,
+          "input": {
+            "input_id": "partition-1",
+            "replicas": {
+              "scarce": {
+                "path": "nodes/scarce/input.json",
+                "sha256": "f25965466b34454ba1f925b282f81875235e31dc7b0e8609b10fa3379f9f898b"
+              },
+              "other": {
+                "path": "nodes/other/input.json",
+                "sha256": "f25965466b34454ba1f925b282f81875235e31dc7b0e8609b10fa3379f9f898b"
+              }
+            }
+          }
+        },
+        {
+          "worker_id": "constrained",
+          "resources": {
+            "cpu": 1,
+            "io": 1
+          },
+          "allowed_nodes": [
+            "scarce"
+          ],
+          "factor": 3,
+          "input": {
+            "input_id": "partition-1",
+            "replicas": {
+              "scarce": {
+                "path": "nodes/scarce/input.json",
+                "sha256": "f25965466b34454ba1f925b282f81875235e31dc7b0e8609b10fa3379f9f898b"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stage_id": "B",
+      "depends_on": [
+        "A"
+      ],
+      "workers": [
+        {
+          "worker_id": "consume",
+          "resources": {
+            "cpu": 1,
+            "io": 1
+          },
+          "allowed_nodes": [
+            "other"
+          ],
+          "factor": -1,
+          "input": {
+            "from": {
+              "stage_id": "A",
+              "worker_id": "constrained"
+            },
+            "replicate_to": [
+              "other"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

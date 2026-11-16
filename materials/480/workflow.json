@@ -1,0 +1,56 @@
+{
+  "capacity": {
+    "cpu": 2,
+    "io": 2
+  },
+  "stages": [
+    {
+      "id": "A",
+      "depends": [],
+      "workers": [
+        {
+          "id": "0",
+          "input": "rows.json",
+          "factor": 1,
+          "resources": {
+            "cpu": 1,
+            "io": 1
+          }
+        },
+        {
+          "id": "1",
+          "input": "rows.json",
+          "factor": 2,
+          "resources": {
+            "cpu": 1,
+            "io": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "depends": [],
+      "workers": [
+        {
+          "id": "0",
+          "input": "rows.json",
+          "factor": 1,
+          "resources": {
+            "cpu": 1,
+            "io": 1
+          }
+        },
+        {
+          "id": "1",
+          "input": "rows.json",
+          "factor": 2,
+          "resources": {
+            "cpu": 1,
+            "io": 1
+          }
+        }
+      ]
+    }
+  ]
+}
