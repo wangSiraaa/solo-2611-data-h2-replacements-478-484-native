@@ -1,0 +1,26 @@
+# 宿主与guest的批协议
+
+宿主接收1..4个输入batch，每批0..128行，每行是NULL或UTF-8文本，单字符串至256字节，全作业编码正文至64KiB；空作业用一个0行batch。字符不规范化，NULL与空串不同。全部输入先验证，非法类型/超界作业不得调用guest。每作业使用新的Store与Instance，Module可按内容缓存；不同job的guest globals和内存不能共享。
+
+WASM为32bit线性地址，单个非shared memory，初始/最高内存不超过4×64KiB；不支持导入、WASI、threads、memory64或多memory。拒绝不匹配模块接口，不由题目实现VM或自行证明VM安全。真实Wasmtime可负责内存隔离、guest trap与燃料。fuel由调用方给定正整数，计该job所有guest调用，包括alloc/process/release/dealloc，不能每批重新加满；不足即失败，不能假造完成。输入文件只含WAT/wasm模块及JSON，不要求攻击宿主runtime本身。
+
+模块必须导出memory及alloc(i32 length)->i32、dealloc(i32 ptr,i32 length)、process(i32 input_descriptor,i32 batch_no,i32 final)->i32 output_descriptor、release(i32 output_descriptor)。其他导出可忽略。模块可在任意调用中memory.grow，也可trap。必须用调用结束后的当前Memory访问，不持有grow前native指针/view跨guest调用；允许直接用Memory.read/write并复制，不要求零拷贝。任何guest返回i32地址若为负或超有效地址空间都拒绝。
+
+descriptor为32字节、little-endian连续8个uint32：abi_version、batch_no、row_count、offsets_ptr、validity_ptr、data_ptr、data_len、flags。abi_version=1；flags只允许最低位FINAL。offsets是row_count+1个uint32，validity是ceil(row_count/8)字节，bit i为1表示第i行有效；高位未用padding bit必须为0。data是data_len个字节。offsets[0]=0，逐项不减，最后offset等于data_len；NULL行必须是零长度span，有效行可空，非空span须完整合法UTF-8。描述符、offsets、validity、data的每段均在当前内存边界内，非空段之间不得重叠；端点和乘加先用足够宽整数计算再校验，不允许切片静默截短。
+
+宿主为每批alloc一个连续slab，写入descriptor和各buffer，batch_no从0递增，最后输入flags=FINAL；alloc长度/返回内存须检查后才写。输入slab在process与输出验证复制完成以前持续借给guest，host不能提前dealloc。process返回一个输出descriptor，可完全别名输入，也可指向新的guest输出；输出batch_no必须等于本次输入，row_count必须等于本批行数，FINAL必须恰与输入final一致。本题每输入恰对应一个输出，不支持一批多输出或额外drain。
+
+宿主完整校验并复制输出后，对成功返回的output descriptor调用release一次，再dealloc输入slab一次。release释放guest输出临时资源，若输出别名输入它不得释放该输入slab；输入归宿主单独dealloc。本协议把这项约定作为合法guest条件，宿主需保证自身不会重复或过早调用。decode失败也须尝试release和dealloc；任一步trap/fuel耗尽时可销毁整个Store收束，不要求在已坏Store里保证guest清理函数成功。process若没有返回则没有output release职责，销毁实例即可；不能继续下一批。记录实际调用次序和资源释放，销毁Store是有效最终资源回收，不以guest不执行free错误扣分。
+
+每job有独立输出路径与job_id；已有成功产物不得覆盖（明确拒绝），同job失败后重跑可用新目录。逐批结果可以写临时文件，只有最后FINAL及所有调用成功、行数核对后原子发布status=complete的数据工件。trap、燃料、ABI、释放或I/O错误均为failed，没有可被公开读取为complete的部分前缀；允许保留带failed标记的诊断暂存。inspect区分未发布、failed、complete。成功产物含完整行数组或等价可重读列格式及批回执。原型返回product中带status complete的前缀即错误，即使外层run返回failed。
+
+最多顺序执行20个job，可不并发；一job失败不污染下一job，模块没有外部副作用或宿主文件访问能力。支持符合此有限ABI的替换模块/输入，不能按公开WAT文件名判断成功与否。公开identity会grow并原样返回输入；bad_descriptor、second_trap和loop是分别检验ABI、完整发布和真实fuel边界的材料，并非全部测试。独立oracle对identity输入输出逐码点及NULL检查；额外变换模块的业务值由其已知定义核对，不要求host猜任意guest函数的业务正确性。
+
+
+# 共享的两个生产接口
+
+`abi.decode_image(image, address, expected)`供原生批客户端直接调用，不创建Wasmtime。image是某一时刻当前线性内存的只读bytes/bytearray/memoryview，地址从image起点计；长度就是可访问范围，不能假设有未提供的尾部。expected含batch_no、row_count、final。该接口须独立验证上述全部descriptor合同，成功返回JSON可序列化的{batch_no,final,rows}，错误明确拒绝，不返回部分行。调用结束后返回值不依赖调用者之后对可变image的修改。Runner必须使用同一ABI语义；可以复制当前内存或分段读取后验证，也可提供等价的有界read适配，并不要求复制整个4页。直接image接口仍须保留，不能靠Runner先验证才成立。
+
+`product.Product(path)`也是普通原生生产者使用的公开工件接口。begin(job_id,row_counts)声明1..4个非负行数及该作业身份；append(job_id,batch)接收已验证业务行批，必须按0起连续批号、一输入一输出、对应row_count和最后一批FINAL约束接收；每批是{batch_no,final,rows}。这个接口不判断任意guest变换是否业务正确，也不重新解析ABI字节。作业内重复批号、早FINAL、缺批commit、错身份均拒绝，不能发布部分完整产品。commit须在全部批到齐之后才公开complete。abort明确终止本次未发布工件；新的Product对象inspect同一路径也不能把暂存当complete。已有complete路径上的begin/append/失败重跑不可改写旧完整版本。无需进程崩溃恢复或多写者竞争。
+
+两个接口分别由batch_client.consume与product_client.publish正常使用，都是要保留的生产入口。实际Wasmtime执行把ABI成功返回的批交给Product，任一解码/释放失败要阻止commit。可以改变内部类、缓冲或存储格式，但上述独立调用的结果与端到端结果应一致；不要求保留原型内部实现。
