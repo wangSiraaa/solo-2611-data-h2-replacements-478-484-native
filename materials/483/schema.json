@@ -1,0 +1,38 @@
+[
+  {
+    "name": "x",
+    "type": "int64",
+    "kind": "base",
+    "nullable": true
+  },
+  {
+    "name": "z",
+    "type": "int64",
+    "kind": "stored",
+    "expr": {
+      "op": "+",
+      "args": [
+        {
+          "col": "y"
+        },
+        1
+      ]
+    },
+    "nullable": true
+  },
+  {
+    "name": "y",
+    "type": "int64",
+    "kind": "virtual",
+    "expr": {
+      "op": "+",
+      "args": [
+        {
+          "col": "x"
+        },
+        1
+      ]
+    },
+    "nullable": true
+  }
+]
