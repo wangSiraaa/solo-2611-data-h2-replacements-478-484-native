@@ -1,0 +1,3 @@
+`python3 probe.py` uses real SQLite and temporary local files. `transactions.manager.Transactions` is also called by direct SQL clients; `exports.writer.DatasetWriter` uses the same public lifecycle API. The probe preserves the ordinary single-level path, then shows a child notification escaping an outer rollback and committed export intent disappearing on reopen. No target repair is included.
+
+The controlled run schema is illustrated by operations.json: scope has children/catch_child_errors; leaves are put(row_id,dataset,value), remove(row_id), export(export_id,dataset), and abort(reason). A caught child abort lets its parent continue; invalid export-id reuse invalidates the top-level request. Public API tests also use direct SQL and real callbacks.

@@ -1,0 +1,29 @@
+{
+  "op": "scope",
+  "catch_child_errors": false,
+  "children": [
+    {
+      "op": "put",
+      "row_id": "a",
+      "dataset": "sales",
+      "value": 7
+    },
+    {
+      "op": "scope",
+      "catch_child_errors": false,
+      "children": [
+        {
+          "op": "export",
+          "export_id": "report-a",
+          "dataset": "sales"
+        }
+      ]
+    },
+    {
+      "op": "put",
+      "row_id": "b",
+      "dataset": "sales",
+      "value": 11
+    }
+  ]
+}
